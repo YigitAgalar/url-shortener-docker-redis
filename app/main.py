@@ -1,15 +1,34 @@
-from fastapi import FastAPI
-from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel,  validator
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI,Request
+from fastapi.responses import RedirectResponse,HTMLResponse
 from .data_schema import Task
 from .shortener import url_shorter
-from urllib.parse import unquote
+from fastapi.templating import Jinja2Templates
+from .routers.login import router 
+from prometheus_fastapi_instrumentator import Instrumentator
+
+
+
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
+
+#templates = Jinja2Templates(".\\app\\views")
+
+
+#templates=Jinja2Templates(".\\app\\views")
+
+
 
 @app.get('/')
 def root():
     return {"message":"alive"}
+
+
+#@app.get("/users", response_class=HTMLResponse)
+#async def user(request:Request):
+   
+#    return templates.TemplateResponse("index.html",{"request":request})
+
 
 
 @app.get("/{url_item}")
@@ -31,3 +50,7 @@ async def kayit_olustur(url=str):
     else:
         task.save()
         return task.expire(task.expire_date*86400)
+
+
+
+app.include_router(router)
